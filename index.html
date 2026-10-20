@@ -329,7 +329,7 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
   const TEST_MODE=false; // true = trial copy: stamps and gift need no code
   const N=STATIONS.length;
   // ---- anonymous counters (numbers only, no names)
-  const CNT="https://abacus.jasoncameron.dev", BASE="cp-eqht98-live-1019";
+  const CNT="https://abacus.jasoncameron.dev", BASE="cp-eqht98-live-1020b";
   // the active namespace is BASE plus a reset "epoch"; resetting bumps the epoch so every counter starts at zero
   let nsCache=null, nsAt=0;
   function getNS(force){
@@ -514,7 +514,7 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     f:{bg:"#C2185B", bg2:"#E75D93", ink:"#FFFFFF", ink2:"#FFE3EE", accent:"#FFC1D9", fallback:"red", motif:"bow"}
   };
   function goldGrad(ctx,x0,y0,x1,y1,t){ const g=ctx.createLinearGradient(x0,y0,x1,y1);
-    if(t.motif==="crown"){ g.addColorStop(0,"#FFF1A8"); g.addColorStop(.35,"#E2B84A"); g.addColorStop(.6,"#A97B1E"); g.addColorStop(.85,"#F3D772"); g.addColorStop(1,"#B8892A"); }
+    if(t.motif==="crown"){ g.addColorStop(0,"#FFF4BE"); g.addColorStop(.35,"#F2CF63"); g.addColorStop(.6,"#D4A63A"); g.addColorStop(.85,"#FBE38C"); g.addColorStop(1,"#E0B54C"); }
     else { g.addColorStop(0,"#FFFFFF"); g.addColorStop(.5,"#FFD6E7"); g.addColorStop(1,"#FFFFFF"); } return g; }
   function drawCrown(ctx,cx,top,w,t){ const s=w/80; ctx.save(); ctx.translate(cx-40*s,top); ctx.scale(s,s);
     ctx.fillStyle=goldGrad(ctx,0,0,80,60,t); ctx.strokeStyle="#7A5A14"; ctx.lineWidth=1.6; ctx.lineJoin="round";
@@ -593,39 +593,44 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
   async function makeStrip(p,t){ const phrase=p.walletPhrase||"";
     try{ await Promise.all([document.fonts.load('60px "NT Panorama Naskh"',(p.name||"س")+phrase+"«»"),document.fonts.load('bold 26px "Libre Baskerville"')]); }catch(e){}
     const W=1125,H=432,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
-    const g=x.createRadialGradient(W/2,H*.3,20,W/2,H/2,W*.62); g.addColorStop(0,t.bg2); g.addColorStop(1,t.bg); x.fillStyle=g; x.fillRect(0,0,W,H);
-    x.strokeStyle=goldGrad(x,0,0,W,0,t); x.lineWidth=3; x.strokeRect(14,14,W-28,H-28); x.lineWidth=1; x.strokeRect(24,24,W-48,H-48);
-    if(t.motif==="crown") drawCrown(x,W/2,34,112,t); else drawBow(x,W/2,26,130,t);
-    const ink=goldGrad(x,W/2-300,0,W/2+300,0,t);
-    // Arabic name
+    const g=x.createRadialGradient(W/2,H*.4,20,W/2,H/2,W*.6); g.addColorStop(0,t.bg2); g.addColorStop(1,t.bg); x.fillStyle=g; x.fillRect(0,0,W,H);
+    const gold=goldGrad(x,0,0,W,H,t), ink=goldGrad(x,W/2-320,0,W/2+320,0,t);
+    x.strokeStyle=gold; x.lineWidth=3; x.strokeRect(8,8,W-16,H-16);
+    // Arabic name, large
+    x.shadowColor=t.motif==="crown"?"rgba(0,0,0,.55)":"rgba(90,0,35,.55)"; x.shadowBlur=10; x.shadowOffsetY=3;
     x.direction="rtl"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillStyle=ink;
-    let fs=56; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; while(x.measureText(p.name).width>700&&fs>32){ fs-=4; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; }
-    x.fillText(p.name,W/2,196);
-    x.strokeStyle=ink; x.lineWidth=1.2; for(const [a,b] of [[80,300],[W-300,W-80]]){ x.beginPath(); x.moveTo(a,182); x.lineTo(b,182); x.stroke(); }
-    // CYBER AMBASSADOR
-    x.direction="ltr"; x.fillStyle=t.ink2; x.font='bold 20px "Libre Baskerville", Georgia, serif';
-    x.fillText("C Y B E R   A M B A S S A D O R",W/2,236);
-    // phrase on two lines, same font and colour as the name, inside « »
-    let a=phrase, b=""; const cut=phrase.indexOf("،");
-    if(cut>0){ a=phrase.slice(0,cut+1).trim(); b=phrase.slice(cut+1).trim(); }
-    else { const w=phrase.split(" "); const h=Math.ceil(w.length/2); a=w.slice(0,h).join(" "); b=w.slice(h).join(" "); }
-    a="« "+a; b=b?(b.replace(/[.]$/,"")+" »"):""; if(!b) a=a+" »";
-    x.direction="rtl"; x.fillStyle=ink; let ps=40; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif';
-    while(Math.max(x.measureText(a).width,x.measureText(b).width)>980&&ps>26){ ps-=2; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif'; }
-    x.fillText(a,W/2,b?318:345); if(b) x.fillText(b,W/2,378);
+    let fs=94; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; while(x.measureText(p.name).width>900&&fs>44){ fs-=4; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; }
+    x.fillText(p.name,W/2,96);
+    // CYBER AMBASSADOR between two rules
+    x.direction="ltr"; x.fillStyle=t.ink2; x.font='bold 27px "Libre Baskerville", Georgia, serif';
+    const ca="C Y B E R   A M B A S S A D O R"; x.fillText(ca,W/2,180); const cw=x.measureText(ca).width;
+    x.strokeStyle=gold; x.lineWidth=1.5; x.beginPath(); x.moveTo(40,171); x.lineTo(W/2-cw/2-24,171); x.moveTo(W/2+cw/2+24,171); x.lineTo(W-40,171); x.stroke();
+    // phrase, two lines, same font and colour as the name
+    const one="« "+phrase.replace(/[.]$/,"")+" »"; x.direction="rtl"; x.fillStyle=ink; let ps=72; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif';
+    while(x.measureText(one).width>1075&&ps>30){ ps-=2; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif'; }
+    x.fillText(one,W/2,276);
+    // English name and date, drawn in the card's own typeface
+    x.shadowBlur=6; x.direction="ltr"; x.fillStyle=t.ink2;
+    const enName="FAHAD BIN SULTAN UNIVERSITY", dt=fmtDate(p.completed||Date.now()).toUpperCase();
+    let es=38; x.font='bold '+es+'px "Libre Baskerville", Georgia, serif';
+    const sep="     ";
+    while(x.measureText(enName+sep+dt).width>1060&&es>20){ es-=2; x.font='bold '+es+'px "Libre Baskerville", Georgia, serif'; }
+    const wN=x.measureText(enName).width, wS=x.measureText(sep).width, wD=x.measureText(dt).width, tot=wN+wS+wD, x0=W/2-tot/2;
+    x.textAlign="left"; x.fillText(enName,x0,392); x.fillText(dt,x0+wN+wS,392); x.textAlign="center";
+    x.shadowBlur=0; x.fillStyle=gold; const dx=x0+wN+wS/2; x.beginPath(); x.moveTo(dx,366); x.lineTo(dx+10,378); x.lineTo(dx,390); x.lineTo(dx-10,378); x.closePath(); x.fill();
+    x.strokeStyle=gold; x.lineWidth=1.2; x.beginPath(); x.moveTo(200,320); x.lineTo(W-200,320); x.stroke();
     const s2=document.createElement("canvas"); s2.width=750; s2.height=288; const y2=s2.getContext("2d"); y2.imageSmoothingQuality="high"; y2.drawImage(c,0,0,750,288);
     return s2.toDataURL("image/png"); }
   function makeLogo(t){ const c=document.createElement("canvas"); c.width=160; c.height=160; const x=c.getContext("2d");
     if(t.motif==="crown") drawCrown(x,80,40,120,t); else drawBow(x,80,30,130,t); return c.toDataURL("image/png"); }
   let walletBusy=false;
-  const WALLET_V=4;
+  const WALLET_V=9;
   function walletBodies(p,t,strip,logo){
     const fem=p.gender==="f";
     const base={ logoText:"Cyber Ambassador", organizationName:"Cybersecurity Awareness", description:"Cyber Ambassador Pass",
-      secondaryFields:[{label:"NAME",value:p.nameEn},{label:"DATE",value:fmtDate(p.completed)}],
       backFields:[{label:"✦",value:p.walletPhrase},{label:"NAME",value:p.nameEn},{label:fem?"سفيرة الأمن السيبراني":"سفير الأمن السيبراني",value:p.name},{label:"DATE",value:fmtDate(p.completed)},
         {label:"فعالية التوعية بالأمن السيبراني",value:fem?("أتمّت "+p.name+" محطات الفعالية العشر وحصلت على لقب سفيرة الأمن السيبراني."):("أتمّ "+p.name+" محطات الفعالية العشر وحصل على لقب سفير الأمن السيبراني.")}],
-      sharingProhibited:true };
+      barcodeValue:p.id, barcodeFormat:"QR", barcodeAltText:p.id, sharingProhibited:true };
     if(p.rank) base.headerFields=[{label:"AMBASSADOR",value:"#"+p.rank}];
     return { pro:Object.assign({},base,{color:t.bg,stripURL:strip,logoURL:logo}),
              simple:Object.assign({},base,{colorPreset:t.fallback,primaryFields:[{label:p.nameEn,value:p.name}]}) };
@@ -634,8 +639,8 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     if(!p.walletPhrase) p.walletPhrase=phraseFor(p.gender);
     p.nameEn=p.nameEn||nameEn(p.name); save(p);
     const t=THEMES[p.gender==="f"?"f":"m"];
-    let strip=null, logo=null, poster=null; try{ strip=await makeStrip(p,t); logo=makeLogo(t); poster=await makePoster(p,t); }catch(e){}
-    const b=walletBodies(p,t,strip,logo); if(poster) b.pro.backgroundURL=poster; return b;
+    let strip=null, logo=null; try{ strip=await makeStrip(p,t); logo=makeLogo(t); }catch(e){}
+    return walletBodies(p,t,strip,logo);
   }
   const wwFetch=(method,path,body)=>fetch("https://api.walletwallet.dev/api/passes"+(path||""),{method,headers:{"Content-Type":"application/json","Authorization":"Bearer "+WALLET_KEY},body:JSON.stringify(body)});
   const serialOf=u=>{ const m=String(u||"").match(/\/p\/([^/?#]+)/); return m?m[1]:null; };
