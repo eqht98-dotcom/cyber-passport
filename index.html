@@ -576,14 +576,20 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
   const wwFetch=(method,path,body)=>fetch("https://api.walletwallet.dev/api/passes"+(path||""),{method,headers:{"Content-Type":"application/json","Authorization":"Bearer "+WALLET_KEY},body:JSON.stringify(body)});
   const serialOf=u=>{ const m=String(u||"").match(/\/p\/([^/?#]+)/); return m?m[1]:null; };
   // cards made with an older design get the new one the next time their owner opens the passport
-  async function upgradeOldPass(){
-    const p=load(); if(!p||!p.walletUrl||(p.walletV||1)>=WALLET_V||!WALLET_KEY||WALLET_KEY.startsWith("__")) return;
-    const serial=serialOf(p.walletUrl); if(!serial) return;
+  async function upgradeOldPass(force){
+    const p=load(); if(!p||!p.walletUrl||(!force&&(p.walletV||1)>=WALLET_V)||!WALLET_KEY||WALLET_KEY.startsWith("__")) return;
+    const serial=serialOf(p.walletUrl); const msg=$("walletMsg");
+    if(!serial){ if(force) msg.textContent="ما لقيت رقم البطاقة في هذا الجواز."; return; }
+    if(force) msg.textContent="جارٍ تحديث بطاقتك…";
+    let code="";
     try{ const b=await preparePass(p); let r=b.pro.stripURL?await wwFetch("PUT","/"+serial,b.pro):null;
-      if(!r||!r.ok) r=await wwFetch("PUT","/"+serial,b.simple);
-      if(r&&r.ok){ const q=load(); if(q){ q.walletV=WALLET_V; save(q); } } }catch(e){}
+      if(r&&!r.ok){ code="P"+r.status; let t=""; try{ t=(await r.text()).slice(0,60) }catch(e){} code+=t?(" "+t):""; }
+      if(!r||!r.ok){ const r2=await wwFetch("PUT","/"+serial,b.simple); if(r2.ok) r=r2; else { code+=" S"+r2.status; } }
+      if(r&&r.ok){ const q=load(); if(q){ q.walletV=WALLET_V; save(q); } if(force) msg.textContent="✓ تم إرسال التصميم الجديد لبطاقتك."; }
+      else if(force) msg.textContent="تعذّر تحديث البطاقة (رمز: "+code.trim()+")";
+    }catch(e){ if(force) msg.textContent="تعذّر تحديث البطاقة (رمز: "+(e&&e.name==="TypeError"?"NET":String(e).slice(0,30))+")"; }
   }
-  setTimeout(upgradeOldPass,4000);
+  setTimeout(()=>upgradeOldPass(false),4000);
   $("walletBtn").addEventListener("click",async()=>{
     const p=load(); if(!p||!p.completed||walletBusy)return;
     if(p.walletUrl){ location.href=p.walletUrl; return; }
