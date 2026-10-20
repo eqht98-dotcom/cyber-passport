@@ -258,7 +258,6 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
       <span class="mono" id="cNameEn" style="font-size:14px;letter-spacing:.12em;opacity:.85"></span>
       <h2 id="cTitle">سفير الأمن السيبراني</h2>
       <div class="rank" id="cRank" hidden><span id="cRankT">أنت السفير رقم</span><b id="cRankN"></b><span>في هذه الفعالية</span></div>
-      <p class="phrase" id="cPhrase"></p>
       <p style="font-size:14px" id="cDid">أتمّ محطات فعالية التوعية بالأمن السيبراني العشر.</p>
       <span class="mono" style="font-size:12px" id="cMeta"></span>
       <div id="claimBox"></div>
@@ -461,7 +460,7 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
 
     $("cert").hidden=done<N;
     if(done===N){
-      $("cName").textContent=p.name; $("cNameEn").textContent=(p.nameEn||nameEn(p.name)).toUpperCase(); $("cPhrase").textContent="« "+phraseFor(p.gender,pagePick)+" »"; { const fem=p.gender==="f"; $("cert").classList.toggle("fem",fem); if($("certSeal").dataset.g!==(fem?"f":"m")){ $("certSeal").innerHTML=fem?BOW_SVG:CROWN_SVG; $("certSeal").dataset.g=fem?"f":"m"; } }
+      $("cName").textContent=p.name; $("cNameEn").textContent=(p.nameEn||nameEn(p.name)).toUpperCase(); { const fem=p.gender==="f"; $("cert").classList.toggle("fem",fem); if($("certSeal").dataset.g!==(fem?"f":"m")){ $("certSeal").innerHTML=fem?BOW_SVG:CROWN_SVG; $("certSeal").dataset.g=fem?"f":"m"; } }
       $("cMeta").textContent=p.id+" · "+fmtDate(p.completed||Date.now());
       $("walletBox").hidden=!WALLET_KEY||WALLET_KEY.startsWith("__");
       const cb=$("claimBox"); cb.innerHTML="";
@@ -535,30 +534,38 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     loop(-1); ctx.fill(); ctx.stroke(); loop(1); ctx.fill(); ctx.stroke();
     ctx.fillStyle="#FF5C96"; ctx.beginPath(); ctx.ellipse(0,0,10,12,0,0,7); ctx.fill(); ctx.stroke();
     ctx.restore(); }
-  async function makeStrip(p,t){ const phrase=null;
-    try{ await Promise.all([document.fonts.load('60px "NT Panorama Naskh"',(p.name||"س")+(phrase||"")),document.fonts.load('bold 26px "Libre Baskerville"')]); }catch(e){}
-    const W=1080,H=360,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
-    const g=x.createRadialGradient(W/2,H*.35,20,W/2,H/2,W*.62); g.addColorStop(0,t.bg2); g.addColorStop(1,t.bg); x.fillStyle=g; x.fillRect(0,0,W,H);
-    x.strokeStyle=goldGrad(x,0,0,W,0,t); x.lineWidth=3; x.strokeRect(16,16,W-32,H-32); x.lineWidth=1; x.strokeRect(26,26,W-52,H-52);
-    for(const [a,b] of [[90,320],[W-320,W-90]]){ x.beginPath(); x.moveTo(a,248); x.lineTo(b,248); x.stroke(); }
-    if(t.motif==="crown") drawCrown(x,W/2,40,150,t); else drawBow(x,W/2,34,170,t);
-    x.direction="rtl"; x.textAlign="center"; x.textBaseline="alphabetic";
-    x.fillStyle=goldGrad(x,W/2-260,0,W/2+260,0,t); x.font='64px "NT Panorama Naskh", Tahoma, serif';
-    let fs=64; while(x.measureText(p.name).width>760&&fs>34){ fs-=4; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; }
-    x.fillText(p.name,W/2,262);
-    x.font='bold 22px "Libre Baskerville", Georgia, serif'; x.direction="ltr"; x.fillStyle=t.ink2;
-    x.direction="ltr"; x.fillStyle=t.ink2; x.font='bold 26px "Libre Baskerville", Georgia, serif';
-    const en=(p.nameEn||nameEn(p.name)).toUpperCase().split("").join(String.fromCharCode(8202));
-    x.fillText(en,W/2,318);
+  async function makeStrip(p,t){ const phrase=p.walletPhrase||"";
+    try{ await Promise.all([document.fonts.load('60px "NT Panorama Naskh"',(p.name||"س")+phrase+"«»"),document.fonts.load('bold 26px "Libre Baskerville"')]); }catch(e){}
+    const W=1125,H=432,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+    const g=x.createRadialGradient(W/2,H*.3,20,W/2,H/2,W*.62); g.addColorStop(0,t.bg2); g.addColorStop(1,t.bg); x.fillStyle=g; x.fillRect(0,0,W,H);
+    x.strokeStyle=goldGrad(x,0,0,W,0,t); x.lineWidth=3; x.strokeRect(14,14,W-28,H-28); x.lineWidth=1; x.strokeRect(24,24,W-48,H-48);
+    if(t.motif==="crown") drawCrown(x,W/2,34,112,t); else drawBow(x,W/2,26,130,t);
+    const ink=goldGrad(x,W/2-300,0,W/2+300,0,t);
+    // Arabic name
+    x.direction="rtl"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillStyle=ink;
+    let fs=56; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; while(x.measureText(p.name).width>700&&fs>32){ fs-=4; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; }
+    x.fillText(p.name,W/2,196);
+    x.strokeStyle=ink; x.lineWidth=1.2; for(const [a,b] of [[80,300],[W-300,W-80]]){ x.beginPath(); x.moveTo(a,182); x.lineTo(b,182); x.stroke(); }
+    // CYBER AMBASSADOR
+    x.direction="ltr"; x.fillStyle=t.ink2; x.font='bold 20px "Libre Baskerville", Georgia, serif';
+    x.fillText("C Y B E R   A M B A S S A D O R",W/2,236);
+    // phrase on two lines, same font and colour as the name, inside « »
+    let a=phrase, b=""; const cut=phrase.indexOf("،");
+    if(cut>0){ a=phrase.slice(0,cut+1).trim(); b=phrase.slice(cut+1).trim(); }
+    else { const w=phrase.split(" "); const h=Math.ceil(w.length/2); a=w.slice(0,h).join(" "); b=w.slice(h).join(" "); }
+    a="« "+a; b=b?(b.replace(/[.]$/,"")+" »"):""; if(!b) a=a+" »";
+    x.direction="rtl"; x.fillStyle=ink; let ps=40; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif';
+    while(Math.max(x.measureText(a).width,x.measureText(b).width)>980&&ps>26){ ps-=2; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif'; }
+    x.fillText(a,W/2,b?318:345); if(b) x.fillText(b,W/2,378);
     return c.toDataURL("image/png"); }
   function makeLogo(t){ const c=document.createElement("canvas"); c.width=160; c.height=160; const x=c.getContext("2d");
     if(t.motif==="crown") drawCrown(x,80,40,120,t); else drawBow(x,80,30,130,t); return c.toDataURL("image/png"); }
   let walletBusy=false;
-  const WALLET_V=2;
+  const WALLET_V=3;
   function walletBodies(p,t,strip,logo){
     const fem=p.gender==="f";
     const base={ logoText:"Cyber Ambassador", organizationName:"Cybersecurity Awareness", description:"Cyber Ambassador Pass",
-      secondaryFields:[{label:"",value:p.walletPhrase}],
+      secondaryFields:[{label:"NAME",value:p.nameEn},{label:"DATE",value:fmtDate(p.completed)}],
       backFields:[{label:"✦",value:p.walletPhrase},{label:"NAME",value:p.nameEn},{label:fem?"سفيرة الأمن السيبراني":"سفير الأمن السيبراني",value:p.name},{label:"DATE",value:fmtDate(p.completed)},
         {label:"فعالية التوعية بالأمن السيبراني",value:fem?("أتمّت "+p.name+" محطات الفعالية العشر وحصلت على لقب سفيرة الأمن السيبراني."):("أتمّ "+p.name+" محطات الفعالية العشر وحصل على لقب سفير الأمن السيبراني.")}],
       sharingProhibited:true };
