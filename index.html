@@ -329,7 +329,7 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
   const TEST_MODE=false; // true = trial copy: stamps and gift need no code
   const N=STATIONS.length;
   // ---- anonymous counters (numbers only, no names)
-  const CNT="https://abacus.jasoncameron.dev", BASE="cp-eqht98-live-1020b";
+  const CNT="https://abacus.jasoncameron.dev", BASE="cp-eqht98-live-1020c";
   // the active namespace is BASE plus a reset "epoch"; resetting bumps the epoch so every counter starts at zero
   let nsCache=null, nsAt=0;
   function getNS(force){
@@ -590,41 +590,43 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     x.direction="ltr"; x.fillStyle=t.ink2; x.globalAlpha=.8; x.font='15px "Libre Baskerville", Georgia, serif';
     x.fillText(fmtDate(p.completed||Date.now()).toUpperCase().split("").join(String.fromCharCode(8202)),W/2,948); x.globalAlpha=1;
     return c.toDataURL("image/png"); }
-  async function makeStrip(p,t){ const phrase=p.walletPhrase||"";
-    try{ await Promise.all([document.fonts.load('60px "NT Panorama Naskh"',(p.name||"س")+phrase+"«»"),document.fonts.load('bold 26px "Libre Baskerville"')]); }catch(e){}
+  async function makeStrip(p,t){ const phrase=p.walletPhrase||"", fem=t.motif!=="crown";
+    const sub=fem?"سفيرة الأمن السيبراني":"سفير الأمن السيبراني";
+    try{ await Promise.all([document.fonts.load('60px "NT Panorama Naskh"',(p.name||"س")+phrase+sub+"«»"),document.fonts.load('bold 26px "Libre Baskerville"')]); }catch(e){}
     const W=1125,H=432,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
     const g=x.createRadialGradient(W/2,H*.4,20,W/2,H/2,W*.6); g.addColorStop(0,t.bg2); g.addColorStop(1,t.bg); x.fillStyle=g; x.fillRect(0,0,W,H);
-    const gold=goldGrad(x,0,0,W,H,t), ink=goldGrad(x,W/2-320,0,W/2+320,0,t);
-    x.strokeStyle=gold; x.lineWidth=3; x.strokeRect(8,8,W-16,H-16);
-    // Arabic name, large
-    x.shadowColor=t.motif==="crown"?"rgba(0,0,0,.55)":"rgba(90,0,35,.55)"; x.shadowBlur=10; x.shadowOffsetY=3;
+    // flat, high-contrast inks (no gradients or shadows on text, so every letter stays sharp)
+    const ink=fem?"#FFFFFF":"#F6D77B", ink2=fem?"#FFFFFF":"#F3E3AE", line=fem?"rgba(255,255,255,.85)":"#D9B65A";
+    x.strokeStyle=line; x.lineWidth=3; x.strokeRect(8,8,W-16,H-16);
+    // soft, tight drop shadow: adds depth without blurring the letters
+    x.shadowColor=fem?"rgba(110,0,40,.45)":"rgba(0,20,12,.6)"; x.shadowBlur=4; x.shadowOffsetX=0; x.shadowOffsetY=2;
     x.direction="rtl"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillStyle=ink;
-    let fs=94; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; while(x.measureText(p.name).width>900&&fs>44){ fs-=4; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; }
-    x.fillText(p.name,W/2,96);
-    // CYBER AMBASSADOR between two rules
-    x.direction="ltr"; x.fillStyle=t.ink2; x.font='bold 27px "Libre Baskerville", Georgia, serif';
-    const ca="C Y B E R   A M B A S S A D O R"; x.fillText(ca,W/2,180); const cw=x.measureText(ca).width;
-    x.strokeStyle=gold; x.lineWidth=1.5; x.beginPath(); x.moveTo(40,171); x.lineTo(W/2-cw/2-24,171); x.moveTo(W/2+cw/2+24,171); x.lineTo(W-40,171); x.stroke();
-    // phrase, two lines, same font and colour as the name
-    const one="« "+phrase.replace(/[.]$/,"")+" »"; x.direction="rtl"; x.fillStyle=ink; let ps=72; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif';
-    while(x.measureText(one).width>1075&&ps>30){ ps-=2; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif'; }
-    x.fillText(one,W/2,276);
-    // English name and date, drawn in the card's own typeface
-    x.shadowBlur=6; x.direction="ltr"; x.fillStyle=t.ink2;
-    const enName="FAHAD BIN SULTAN UNIVERSITY", dt=fmtDate(p.completed||Date.now()).toUpperCase();
-    let es=38; x.font='bold '+es+'px "Libre Baskerville", Georgia, serif';
-    const sep="     ";
+    // Arabic name
+    let fs=92; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; while(x.measureText(p.name).width>900&&fs>44){ fs-=4; x.font=fs+'px "NT Panorama Naskh", Tahoma, serif'; }
+    x.fillText(p.name,W/2,100);
+    // Arabic title between two rules
+    x.fillStyle=ink2; x.font='44px "NT Panorama Naskh", Tahoma, serif'; x.fillText(sub,W/2,178); const cw=x.measureText(sub).width;
+    x.shadowColor="transparent"; x.strokeStyle=line; x.lineWidth=2; x.beginPath(); x.moveTo(40,160); x.lineTo(W/2-cw/2-26,160); x.moveTo(W/2+cw/2+26,160); x.lineTo(W-40,160); x.stroke();
+    // phrase on one line
+    x.shadowColor=fem?"rgba(110,0,40,.45)":"rgba(0,20,12,.6)";
+    const one="« "+phrase.replace(/[.]$/,"")+" »"; x.fillStyle=ink; let ps=68; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif';
+    while(x.measureText(one).width>1070&&ps>30){ ps-=2; x.font=ps+'px "NT Panorama Naskh", Tahoma, serif'; }
+    x.fillText(one,W/2,280);
+    x.shadowColor="transparent"; x.strokeStyle=line; x.lineWidth=1.5; x.beginPath(); x.moveTo(200,320); x.lineTo(W-200,320); x.stroke();
+    // university and date
+    x.shadowColor=fem?"rgba(110,0,40,.4)":"rgba(0,20,12,.55)"; x.shadowBlur=3; x.shadowOffsetY=2;
+    x.direction="ltr"; x.fillStyle=ink2;
+    const enName="FAHAD BIN SULTAN UNIVERSITY", dt=fmtDate(p.completed||Date.now()).toUpperCase(), sep="      ";
+    let es=36; x.font='bold '+es+'px "Libre Baskerville", Georgia, serif';
     while(x.measureText(enName+sep+dt).width>1060&&es>20){ es-=2; x.font='bold '+es+'px "Libre Baskerville", Georgia, serif'; }
-    const wN=x.measureText(enName).width, wS=x.measureText(sep).width, wD=x.measureText(dt).width, tot=wN+wS+wD, x0=W/2-tot/2;
-    x.textAlign="left"; x.fillText(enName,x0,392); x.fillText(dt,x0+wN+wS,392); x.textAlign="center";
-    x.shadowBlur=0; x.fillStyle=gold; const dx=x0+wN+wS/2; x.beginPath(); x.moveTo(dx,366); x.lineTo(dx+10,378); x.lineTo(dx,390); x.lineTo(dx-10,378); x.closePath(); x.fill();
-    x.strokeStyle=gold; x.lineWidth=1.2; x.beginPath(); x.moveTo(200,320); x.lineTo(W-200,320); x.stroke();
-    const s2=document.createElement("canvas"); s2.width=750; s2.height=288; const y2=s2.getContext("2d"); y2.imageSmoothingQuality="high"; y2.drawImage(c,0,0,750,288);
-    return s2.toDataURL("image/png"); }
+    const wN=x.measureText(enName).width, wS=x.measureText(sep).width, wD=x.measureText(dt).width, x0=W/2-(wN+wS+wD)/2;
+    x.textAlign="left"; x.fillText(enName,x0,390); x.fillText(dt,x0+wN+wS,390); x.textAlign="center";
+    x.shadowColor="transparent"; x.fillStyle=line; const dx=x0+wN+wS/2; x.beginPath(); x.moveTo(dx,364); x.lineTo(dx+10,376); x.lineTo(dx,388); x.lineTo(dx-10,376); x.closePath(); x.fill();
+    return c.toDataURL("image/png"); }
   function makeLogo(t){ const c=document.createElement("canvas"); c.width=160; c.height=160; const x=c.getContext("2d");
     if(t.motif==="crown") drawCrown(x,80,40,120,t); else drawBow(x,80,30,130,t); return c.toDataURL("image/png"); }
   let walletBusy=false;
-  const WALLET_V=9;
+  const WALLET_V=11;
   function walletBodies(p,t,strip,logo){
     const fem=p.gender==="f";
     const base={ logoText:"Cyber Ambassador", organizationName:"Cybersecurity Awareness", description:"Cyber Ambassador Pass",
