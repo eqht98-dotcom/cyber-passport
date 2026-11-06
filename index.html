@@ -121,6 +121,10 @@ button.slot:hover{border-color:var(--foil);background:color-mix(in srgb,var(--fo
 .walletbox{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;width:100%}
 .walletbtn{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;border:1px solid #444;border-radius:12px;padding:12px 18px;font-size:17px;font-family:var(--f-body)}
 .walletbtn[disabled]{opacity:.6}
+.imgbtn{background:transparent;border-color:currentColor;color:inherit}
+#cardView{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+#cardView.on{display:flex} #cardView img{max-width:100%;max-height:70vh;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.6);-webkit-touch-callout:default}
+#cardView p{color:#fff;font-size:16px;text-align:center;margin:0} #cardView button{background:#fff;color:#000;border:0;border-radius:10px;padding:10px 22px;font-size:16px;font-family:inherit}
 .walletmsg{font-size:15px;color:var(--foil-soft);min-height:1.2em;text-align:center}
 fieldset.gender{border:0;margin:0;padding:0}
 .gopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -342,7 +346,7 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
   }
   // ---- participant log (Google Form → Sheet)
   const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSe9zBnCO-3IDx_y4yM5tfvCOwwgI9t33B8rItsAyXHk5EOjLA/formResponse";
-  const WALLET_KEY="ww_live_cf5065fa8bb9754dfd40a9f012c0881b"; // WalletWallet API key (ww_live_...)
+  const WALLET_KEY="ww_live_773c420b289e741ed45ab40bbbdd542f"; // WalletWallet API key (ww_live_...)
   const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vT4_X373e70E4Mo6wPeNJ00p5yvmjRurXLloJVk3e9ZlG_w8LcyuSJotQaVwB16X3guoTBHBJxymbnn/pub?gid=1442518112&single=true&output=csv";
   function logEvent(k,ns){ try{ const p=load(); if(!p||!p.id)return;
       const body=new URLSearchParams({"entry.1003929173":p.id,"entry.1691615182":p.name||"","entry.1854308239":k+"|"+(ns||"")});
@@ -590,14 +594,19 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     x.direction="ltr"; x.fillStyle=t.ink2; x.globalAlpha=.8; x.font='15px "Libre Baskerville", Georgia, serif';
     x.fillText(fmtDate(p.completed||Date.now()).toUpperCase().split("").join(String.fromCharCode(8202)),W/2,948); x.globalAlpha=1;
     return c.toDataURL("image/png"); }
-  async function makeStrip(p,t){ const phrase=p.walletPhrase||"", fem=t.motif!=="crown";
+  async function makeStrip(p,t,card){ const phrase=p.walletPhrase||"", fem=t.motif!=="crown";
     const sub=fem?"سفيرة الأمن السيبراني":"سفير الأمن السيبراني";
     try{ await Promise.all([document.fonts.load('60px "NT Panorama Naskh"',(p.name||"س")+phrase+sub+"«»"),document.fonts.load('bold 26px "Libre Baskerville"')]); }catch(e){}
-    const W=1125,H=432,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+    const W=1125,H=card?712:432,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
     const g=x.createRadialGradient(W/2,H*.4,20,W/2,H/2,W*.6); g.addColorStop(0,t.bg2); g.addColorStop(1,t.bg); x.fillStyle=g; x.fillRect(0,0,W,H);
     // flat, high-contrast inks (no gradients or shadows on text, so every letter stays sharp)
     const ink=fem?"#FFFFFF":"#F6D77B", ink2=fem?"#FFFFFF":"#F3E3AE", line=fem?"rgba(255,255,255,.85)":"#D9B65A";
     x.strokeStyle=line; x.lineWidth=3; x.strokeRect(8,8,W-16,H-16);
+    if(card){ x.lineWidth=1.2; x.strokeRect(20,20,W-40,H-40);
+      if(fem) drawBow(x,W/2,26,190,t); else drawCrown(x,W/2,40,170,t);
+      x.fillStyle=ink2; x.direction="ltr"; x.textAlign="center"; x.font='bold 30px "Libre Baskerville", Georgia, serif';
+      x.fillText((fem?"CYBER AMBASSADOR":"CYBER AMBASSADOR")+(p.rank?("  \u2022  #"+p.rank):""),W/2,236);
+      x.translate(0,262); }
     // soft, tight drop shadow: adds depth without blurring the letters
     x.shadowColor=fem?"rgba(110,0,40,.45)":"rgba(0,20,12,.6)"; x.shadowBlur=4; x.shadowOffsetX=0; x.shadowOffsetY=2;
     x.direction="rtl"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillStyle=ink;
@@ -622,11 +631,20 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     const wN=x.measureText(enName).width, wS=x.measureText(sep).width, wD=x.measureText(dt).width, x0=W/2-(wN+wS+wD)/2;
     x.textAlign="left"; x.fillText(enName,x0,390); x.fillText(dt,x0+wN+wS,390); x.textAlign="center";
     x.shadowColor="transparent"; x.fillStyle=line; const dx=x0+wN+wS/2; x.beginPath(); x.moveTo(dx,364); x.lineTo(dx+10,376); x.lineTo(dx,388); x.lineTo(dx-10,376); x.closePath(); x.fill();
+    if(card) x.setTransform(1,0,0,1,0,0);
     return c.toDataURL("image/png"); }
   function makeLogo(t){ const c=document.createElement("canvas"); c.width=160; c.height=160; const x=c.getContext("2d");
     if(t.motif==="crown") drawCrown(x,80,40,120,t); else drawBow(x,80,30,130,t); return c.toDataURL("image/png"); }
   let walletBusy=false;
-  const WALLET_V=11;
+  const KEY_TAG=String(WALLET_KEY).slice(-6), OLD_TAG="c0881b";
+  // a card made under another account can't be updated with this key: offer a fresh designed card instead
+  function checkAccount(){ const p=load(); if(!p||!p.walletUrl||!WALLET_KEY||WALLET_KEY.startsWith("__")) return false;
+    if((p.walletAcct||OLD_TAG)===KEY_TAG) return false;
+    p.oldWalletUrl=p.walletUrl; delete p.walletUrl; p.walletReissue=true; save(p);
+    const fem=p.gender==="f"; $("walletLbl").textContent=fem?"أضيفي بطاقتكِ بالتصميم الجديد":"أضف بطاقتك بالتصميم الجديد";
+    $("walletMsg").textContent="صار لبطاقتك تصميم جديد ✨ اضغط الزر لإضافتها، وتقدر تحذف القديمة من المحفظة.";
+    return true; }
+  const WALLET_V=12;
   function walletBodies(p,t,strip,logo){
     const fem=p.gender==="f";
     const base={ logoText:"Cyber Ambassador", organizationName:"Cybersecurity Awareness", description:"Cyber Ambassador Pass",
@@ -635,7 +653,9 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
       barcodeValue:p.id, barcodeFormat:"QR", barcodeAltText:p.id, sharingProhibited:true };
     if(p.rank) base.headerFields=[{label:"AMBASSADOR",value:"#"+p.rank}];
     return { pro:Object.assign({},base,{color:t.bg,stripURL:strip,logoURL:logo}),
-             simple:Object.assign({},base,{colorPreset:t.fallback,primaryFields:[{label:p.nameEn,value:p.name}]}) };
+             simple:Object.assign({},base,{colorPreset:t.fallback,primaryFields:[{label:fem?"سفيرة الأمن السيبراني":"سفير الأمن السيبراني",value:p.name}],
+               secondaryFields:[{label:"UNIVERSITY",value:"Fahad Bin Sultan University"}],auxiliaryFields:[{label:"DATE",value:fmtDate(p.completed||Date.now())},{label:"NAME",value:p.nameEn}]}),
+             basic:Object.assign({},base,{colorPreset:t.fallback,primaryFields:[{label:p.nameEn,value:p.name}]}) };
   }
   async function preparePass(p){
     if(!p.walletPhrase) p.walletPhrase=phraseFor(p.gender);
@@ -645,17 +665,34 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     return walletBodies(p,t,strip,logo);
   }
   const wwFetch=(method,path,body)=>fetch("https://api.walletwallet.dev/api/passes"+(path||""),{method,headers:{"Content-Type":"application/json","Authorization":"Bearer "+WALLET_KEY},body:JSON.stringify(body)});
+  // smaller copy of an image (JPEG) for when the full-size strip is rejected
+  function shrinkImg(src,w,h,type){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(im,0,0,w,h); res(c.toDataURL(type||"image/jpeg",.92)); }; im.onerror=()=>res(null); im.src=src; }); }
+  // try the designed card: full strip, then a lighter strip; logs the reason to the sheet if both fail
+  async function sendPro(method,path,b){
+    if(!b.pro.stripURL) return {r:null,why:"nostrip"};
+    let why="";
+    const tries=[b.pro];
+    try{ const s2=await shrinkImg(b.pro.stripURL,750,288), l2=await shrinkImg(b.pro.logoURL,120,120,"image/png"); if(s2) tries.push(Object.assign({},b.pro,{stripURL:s2,logoURL:l2||b.pro.logoURL})); }catch(e){}
+    for(let i=0;i<tries.length;i++){
+      try{ const r=await wwFetch(method,path,tries[i]); if(r.ok) return {r,why:""};
+        let t=""; try{ t=(await r.text()).replace(/\s+/g," ").slice(0,120) }catch(e){} why+=" T"+(i+1)+":"+r.status+" "+t;
+        if(r.status===429||r.status===401) break;
+      }catch(e){ why+=" T"+(i+1)+":NET"; }
+    }
+    try{ logEvent("wallet-pro-fail:"+why.trim()); }catch(e){}
+    return {r:null,why:why.trim()};
+  }
   const serialOf=u=>{ const m=String(u||"").match(/\/p\/([^/?#]+)/); return m?m[1]:null; };
   // cards made with an older design get the new one the next time their owner opens the passport
   async function upgradeOldPass(force){
+    if(checkAccount()) return;
     const p=load(); if(!p||!p.walletUrl||(!force&&(p.walletV||1)>=WALLET_V)||!WALLET_KEY||WALLET_KEY.startsWith("__")) return;
     const serial=serialOf(p.walletUrl); const msg=$("walletMsg");
     if(!serial){ if(force) msg.textContent="ما لقيت رقم البطاقة في هذا الجواز."; return; }
     if(force) msg.textContent="جارٍ تحديث بطاقتك…";
     let code="";
-    try{ const b=await preparePass(p); let r=b.pro.stripURL?await wwFetch("PUT","/"+serial,b.pro):null;
-      if(r&&!r.ok){ code="P"+r.status; let t=""; try{ t=(await r.text()).slice(0,60) }catch(e){} code+=t?(" "+t):""; }
-      if(!r||!r.ok){ const r2=await wwFetch("PUT","/"+serial,b.simple); if(r2.ok) r=r2; else { code+=" S"+r2.status; } }
+    try{ const b=await preparePass(p); const pr=await sendPro("PUT","/"+serial,b); let r=pr.r; if(!r) code="P "+pr.why.slice(0,60);
+      // never downgrade an existing card to the plain design; just try again next time
       if(r&&r.ok){ const q=load(); if(q){ q.walletV=WALLET_V; save(q); } if(force) msg.textContent="✓ تم إرسال التصميم الجديد لبطاقتك."; }
       else if(force) msg.textContent="تعذّر تحديث البطاقة (رمز: "+code.trim()+")";
     }catch(e){ if(force) msg.textContent="تعذّر تحديث البطاقة (رمز: "+(e&&e.name==="TypeError"?"NET":String(e).slice(0,30))+")"; }
@@ -667,12 +704,12 @@ setTimeout(function(){s.classList.add("out");setTimeout(function(){s.remove()},6
     walletBusy=true; $("walletBtn").disabled=true; $("walletMsg").textContent="جارٍ تجهيز بطاقتك…";
     try{
       const b=await preparePass(p);
-      let r=null; if(b.pro.stripURL){ try{ r=await wwFetch("POST","",b.pro); }catch(e){ r=null; } }
-      if(!r||r.status===400||r.status===403){ r=await wwFetch("POST","",b.simple); }
+      let r=(await sendPro("POST","",b)).r;
+      if(!r){ r=await wwFetch("POST","",b.simple); if(!r.ok) r=await wwFetch("POST","",b.basic); }
       if(!r.ok) throw new Error(String(r.status));
       const j=await r.json(); if(!j.shareUrl) throw new Error("no url");
-      const q=load(); if(q){ q.walletUrl=j.shareUrl; q.walletV=WALLET_V; save(q); }
-      bump("wallet"); bump("wallet-"+(p.gender==="f"?"f":"m")); logEvent("wallet-serial:"+(j.serialNumber||serialOf(j.shareUrl)||""));
+      const q=load(); const re=!!(q&&q.walletReissue); if(q){ q.walletUrl=j.shareUrl; q.walletV=WALLET_V; q.walletAcct=KEY_TAG; delete q.walletReissue; save(q); }
+      if(!re){ bump("wallet"); bump("wallet-"+(p.gender==="f"?"f":"m")); } logEvent("wallet-serial:"+(j.serialNumber||serialOf(j.shareUrl)||""));
       $("walletMsg").textContent="جاري فتح البطاقة…"; location.href=j.shareUrl;
     }catch(e){ const m=String(e&&e.message||e); const code=/^\d+$/.test(m)?m:(e&&e.name==="TypeError"?"NET":m.slice(0,20));
       $("walletMsg").textContent=(code==="429")?"الخدمة مشغولة. جرّب بعد دقيقة.":"تعذّر تجهيز البطاقة. تأكد من الإنترنت وجرّب مرة ثانية. (رمز: "+code+")"; }
